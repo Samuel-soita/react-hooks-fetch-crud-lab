@@ -5,6 +5,7 @@ import {
   render,
   screen,
   waitForElementToBeRemoved,
+  waitFor,
 } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import { server } from "../mocks/server";
@@ -82,13 +83,22 @@ test("updates the answer when the dropdown is changed", async () => {
 
   await screen.findByText(/lorem testum 2/g);
 
-  fireEvent.change(screen.queryAllByLabelText(/Correct Answer/)[0], {
+  const dropdown = screen.queryAllByLabelText(/Correct Answer/)[0];
+  
+  // Initial value check (optional)
+  expect(dropdown.value).toBe("2"); // Assuming mock data starts with correctIndex: 2
+
+  fireEvent.change(dropdown, {
     target: { value: "3" },
   });
 
-  expect(screen.queryAllByLabelText(/Correct Answer/)[0].value).toBe("3");
+  // Wait for the update to complete
+  await waitFor(() => {
+    expect(dropdown.value).toBe("3");
+  });
 
+  // Optional: Verify after rerender if needed
   rerender(<App />);
-
-  expect(screen.queryAllByLabelText(/Correct Answer/)[0].value).toBe("3");
+  const updatedDropdown = screen.queryAllByLabelText(/Correct Answer/)[0];
+  expect(updatedDropdown.value).toBe("3");
 });
